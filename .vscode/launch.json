@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "pwa-node",
+      "request": "launch",
+      "name": "Launch current file",
+      "program": "${file}",
+      "runtimeExecutable": "/home/sa/.nvm/versions/node/v19.9.0/bin/node"
+    }
+  ]
+}
