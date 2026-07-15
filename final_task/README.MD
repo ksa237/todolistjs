@@ -1,3 +1,3 @@
 ## Итоговое задание по курсу "Первые шаги в JavaScript"
 ### Исполнитель: Казаков Сергей Анатольевич
-e-mail: [ksa23@yandex.ru]
+[e-mail:] (mailto:ksa237@yandex.ru)
