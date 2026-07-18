@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>TO-DO List</title>
+</head>
+<body>
+    <div class="flex-container">
+        <div class="item">
+            <h2>Панель управления</h2>
+            <br>
+            <form action="#">
+                <input id="taskContent" type="text" placeholder="Опишите задачу">
+                <button id="addTask" type="submit">Добавить</button>
+                <script>
+                    const btAddTask = document.querySelector("#addTask");
+
+                    const addTaskClick = function () {
+
+                        const newTaskElement = document.querySelector("#taskContent");
+                        const taskListElement = document.querySelector("#taskList");
+
+                        const newTask = document.createElement('p');
+                        newTask.textContent = newTaskElement.value;
+                        taskListElement.append(newTask);
+
+                    };
+
+                    btAddTask.addEventListener('click', addTaskClick);
+                </script>
+            
+            
+            </form>
+        </div>
+
+        <div id="taskList" class="item">
+            <h2>Список задач</h2>
+        </div>
+
+        <div class="item item-narrow">
+            <h2>Блок фильтрации</h2>
+        </div>
+    </div>
+
+    <style>
+        .flex-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 10px;
+        }
+
+        .item {
+            flex: 1 1 auto;
+            border: 2px solid black;
+            height: 500px;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        .item-narrow {
+            width: 200px;
+            flex: none;
+            min-width: 200px;
+        }
+
+        /* Подчёркивание заголовков */
+        .item h2 {
+            color: blue;
+            border-bottom: 4px solid black; /* толстая линия снизу */
+            padding-bottom: 8px;             /* отступ между текстом и линией */
+            margin: 0 0 15px 0;               /* сброс стандартных отступов h2, снизу — отступ до контента */
+        }
+    </style>
+
+
+
+
+
+
+</body>
+</html>
