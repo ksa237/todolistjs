@@ -10,19 +10,19 @@
             <h2>Панель управления</h2>
             <br>
             <form action="#">
-                <input id="taskContent" type="text" placeholder="Опишите задачу">
-                <button id="addTask" type="submit">Добавить</button>
+                <input id="div1-addTask" type="text" placeholder="Опишите задачу">
+                <button id="btAddTask" type="submit">Добавить</button>
                 <script>
-                    const btAddTask = document.querySelector("#addTask");
+                    const btAddTask = document.querySelector("#btAddTask");
 
                     const addTaskClick = function () {
 
-                        const newTaskElement = document.querySelector("#taskContent");
-                        const taskListElement = document.querySelector("#taskList");
+                        const div1AddTask = document.querySelector("#div1-addTask");
+                        const div2TaskList = document.querySelector("#div2-taskList");
 
                         const newTask = document.createElement('p');
-                        newTask.textContent = newTaskElement.value;
-                        taskListElement.append(newTask);
+                        newTask.textContent = div1AddTask.value;
+                        div2TaskList.append(newTask);
 
                     };
 
@@ -33,7 +33,7 @@
             </form>
         </div>
 
-        <div id="taskList" class="item">
+        <div id="div2-taskList" class="item">
             <h2>Список задач</h2>
         </div>
 
