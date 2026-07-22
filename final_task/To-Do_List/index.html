@@ -5,36 +5,96 @@
     <title>TO-DO List</title>
 </head>
 <body>
+
+    
     <div class="flex-container">
         <div class="item">
             <h2>Панель управления</h2>
             <br>
-            <form action="#">
+            <form>    
                 <input id="div1-addTask" type="text" placeholder="Опишите задачу">
-                <button id="btAddTask" type="submit">Добавить</button>
+                <button id="btAddTask" type="button">Добавить</button>
                 <script>
                     const btAddTask = document.querySelector("#btAddTask");
 
-                    const addTaskClick = function () {
+                    function updateTaskList(taskItem) {
+                        
+                        const rawData = localStorage.getItem('currentTaskList');
+                        let currentTaskList = []; 
+                        
+                        if (rawData !== null) {
+                            try {
+                                currentTaskList = JSON.parse(rawData);
+                            } catch (e) {
+                                console.error("Некорректные данные в LocalStorage: currentTaskList.", e);
+                                currentTaskList = [];
+                            }
+ 
+                        };
 
+                        const idx = currentTaskList.indexOf(taskItem);
+                        if(idx!==-1) {
+                            currentTaskList.splice(idx, 1);
+                        };
+                        currentTaskList.push(taskItem);
+
+                        localStorage.setItem('currentTaskList', JSON.stringify(currentTaskList));
+
+                    };
+
+                    function renderTaskList(div2TaskList) {
+
+                        const rawData = localStorage.getItem('currentTaskList');
+                        let currentTaskList = []; 
+                        
+                        if (rawData !== null) {
+                            try {
+                                currentTaskList = JSON.parse(rawData);
+                            } catch (e) {
+                                console.error("Некорректные данные в LocalStorage: currentTaskList.", e);
+                                currentTaskList = [];
+                            }
+                        };
+
+                        
+                        while(div2TaskList.firstChild){
+                            div2TaskList.removeChild(div2TaskList.firstChild);
+                        };
+
+                        currentTaskList.forEach(element => {
+                            const newTask = document.createElement('p');
+                            newTask.textContent = element;
+                            div2TaskList.append(newTask);
+                        });
+
+                    };
+
+                    const addTaskClick = function () {
+                        
                         const div1AddTask = document.querySelector("#div1-addTask");
                         const div2TaskList = document.querySelector("#div2-taskList");
 
                         const newTask = document.createElement('p');
                         newTask.textContent = div1AddTask.value;
-                        div2TaskList.append(newTask);
+                        
+                        updateTaskList(div1AddTask.value);
+                        div1AddTask.value="";
+
+                        renderTaskList(div2TaskList);
 
                     };
-
+   
                     btAddTask.addEventListener('click', addTaskClick);
                 </script>
-            
-            
             </form>
         </div>
 
-        <div id="div2-taskList" class="item">
+        <div class="item">
             <h2>Список задач</h2>
+            <div id="div2-taskList">
+
+
+            </div>
         </div>
 
         <div class="item item-narrow">
@@ -72,11 +132,6 @@
             margin: 0 0 15px 0;               /* сброс стандартных отступов h2, снизу — отступ до контента */
         }
     </style>
-
-
-
-
-
 
 </body>
 </html>
