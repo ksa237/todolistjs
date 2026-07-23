@@ -17,114 +17,89 @@
                 <input id="div1-addTask" type="text" placeholder="Опишите задачу">
                 <button id="btAddTask" type="button">Добавить</button>
                 <script>
+
+
                     function updateTaskListInSrorage(taskContent) {
 
-                        const rawData = localStorage.getItem('currentTaskList');
-                        let currentTaskList = [];
-                        if (rawData !== null) {
-                            try {
-                                currentTaskList = JSON.parse(rawData);
-                            } catch (e) {
-                                console.error("Некорректные данные в LocalStorage: currentTaskList.", e);
-                                currentTaskList = [];
-                            }
+                        idKey = 'key' + String(localStorage.length);
+
+                        const newTaskObj = getTaskObject(taskContent, idKey);
+                        localStorage.setItem(idKey, JSON.stringify(newTaskObj));
+
+                        return idKey;
+                    };
+
+                    function deleteButtonAndParagraphOnForm(idTask) {
+
+                        let pFormEl = document.querySelector('#paragraph' + idTask);
+                        pFormEl.remove();
+                    };
+
+                    function updateButtonAndParagraphOnForm(idKey, formEl) {
+
+                        objTask = {};
+                        try {
+                            const rawData = localStorage.getItem(idKey);
+                            objTask = JSON.parse(rawData);
+                        } catch (e) {
+                            console.warn("Отсутствуют данные в локальном хранилище, невозможно получить задачу по ИД=" + idKey, e);
+                            return false;
                         };
 
-//console.log("Длина массива данных: "+currentTaskList.length);                        
+                        
+                        const idTask = idKey.match(/\d+$/);
+                        const paragraph = addParagraphToElement(formEl, idTask, objTask.description);
 
-                        let newTaskObj = getTaskObject(taskContent, currentTaskList.length);
-                        suffix = currentTaskList.push(newTaskObj);
-                        localStorage.setItem('currentTaskList', JSON.stringify(currentTaskList));
+                        addButtonDeleteToElement(paragraph, idTask, (e) => {
 
-                        return suffix;
+                            const activeBt = e.currentTarget;
+                            let buttonID = undefined;
+                            if (activeBt) {
+                                buttonID = activeBt.id;
+                            } else return false;
+
+                            const idTask = buttonID.match(/\d+$/);
+                            const idKey = 'key'+idTask;
+                            deleteTaskByIndexOnStorage(idKey);
+                            deleteButtonAndParagraphOnForm(idTask);
+
+                        });
+
                     };
 
-                    function addButtonDeleteToElement(element, suffix, fc) {
+                    function addParagraphToElement(formEl, idTask, descriptionTask) {
+
+                        const paragraph = document.createElement('p');
+                        paragraph.textContent = descriptionTask;
+                        paragraph.id = "paragraph" + idTask;
+                        formEl.append(paragraph);
+
+                        return paragraph
+
+                    }
+
+                    function addButtonDeleteToElement(formEl, suffix, fc) {
                         const btDelete = document.createElement('button');
                         btDelete.textContent = "Удалить";
-                        btDelete.type='button';
+                        btDelete.type = 'button';
                         btDelete.id = 'delete' + suffix;
-//console.log("Добавлена кнопка "+btDelete.textContent+" id="+btDelete.id);                        
                         btDelete.addEventListener('click', fc);
-                        element.append(btDelete);
+                        formEl.append(btDelete);
                     };
 
-                    function getTaskObject(description, id){
-//console.log("Добавлен объект, ИД = "+id);                        
-                        
+                    function getTaskObject(description, id) {
+
                         const taskObj = {
                             id,
                             description,
                             isComplete: false
                         };
-                     
+
                         return taskObj;
                     };
 
-                    function renderTaskListOnSite(div2TaskList) {
-
-                        const rawData = localStorage.getItem('currentTaskList');
-                        let currentTaskList = [];
-
-                        if (rawData !== null) {
-                            try {
-                                currentTaskList = JSON.parse(rawData);
-                            } catch (e) {
-                                console.error("Некорректные данные в LocalStorage: currentTaskList.", e);
-                                currentTaskList = [];
-                            }
-                        };
-
-
-                        while (div2TaskList.firstChild) {
-                            div2TaskList.removeChild(div2TaskList.firstChild);
-                        };
-
-                        currentTaskList.forEach(element => {
-                            const newTask = document.createElement('p');
-                            newTask.textContent = element.description;
-                            div2TaskList.append(newTask);
-
-                            addButtonDeleteToElement(newTask, element.id, (e) => {
-                               
-                                const activeBt = e.currentTarget;
-                                let buttonID = undefined;
-                                if (activeBt) {
-                                    console.log('Нажатая кнопка:', activeBt.id);
-                                    buttonID = activeBt.id;
-                                } else return false;
-
-                                const idxTask = buttonID.match(/\d+$/); 
-console.log("idxTask="+idxTask);
-                                
-                                deleteTaskByIndexOnStorage(idxTask);
-                                
-
-
-
- 
-                            });
-                        });
-
-                    };
-
-                    function deleteTaskByIndexOnStorage(idxTask){
-
-                        const rawData = localStorage.getItem('currentTaskList');
-                        let currentTaskList = [];
-                        if (rawData !== null) {
-                            try {
-                                currentTaskList = JSON.parse(rawData);
-                            } catch (e) {
-                                console.error("Некорректные данные в LocalStorage: currentTaskList.", e);
-                                currentTaskList = [];
-                            }
-                        };
-console.log("обработка индекса "+idxTask);
-                        const deleteID = currentTaskList.findIndex(task => task.id==idxTask);
-console.log("найден индекс значения хранилища "+deleteID);                        
-                        currentTaskList.splice(deleteID, 1);
-
+                    function deleteTaskByIndexOnStorage(idTask) {
+                        localStorage.removeItem(idTask);
                     }
 
                     const addTaskClick = function () {
@@ -132,18 +107,20 @@ console.log("найден индекс значения хранилища "+del
                         const div1AddTask = document.querySelector("#div1-addTask");
                         const div2TaskList = document.querySelector("#div2-taskList");
 
-                        const newTask = document.createElement('p');
-                        newTask.textContent = div1AddTask.value;
- //console.log("добавили параграф: "+div1AddTask.value);                           
-                        let suffix = updateTaskListInSrorage(div1AddTask.value);
-                        div1AddTask.value = "";
+                        //const newTask = document.createElement('p');
+                        //newTask.textContent = div1AddTask.value;
 
-                        renderTaskListOnSite(div2TaskList, suffix);
+                        idKey = updateTaskListInSrorage(div1AddTask.value);
+
+                        updateButtonAndParagraphOnForm(idKey, div2TaskList);
 
                     };
-                    
+
                     const btAddTask = document.querySelector("#btAddTask");
                     btAddTask.addEventListener('click', addTaskClick);
+
+                    
+
                 </script>
             </form>
         </div>
@@ -152,6 +129,33 @@ console.log("найден индекс значения хранилища "+del
             <h2>Список задач</h2>
             <form>
                 <div id="div2-taskList">
+                    <script>
+                        function readFromSorage() {
+
+                        const div2TaskList = document.querySelector("#div2-taskList");
+                   
+
+                        const storageSize = localStorage.length;
+//console.log("размер локального хранилища : "+storageSize) ;   
+                        for (i = 0; i < storageSize; i++) {
+                            idKey = localStorage.key(i);
+                            let item = localStorage.getItem(idKey);
+
+                            if (!item) {
+                                continue;
+                            };
+                            objTask = JSON.parse(item);
+//console.log("найден объект по ИД : "+idKey+" описание: "+objTask.description)  ;   
+                            updateButtonAndParagraphOnForm(idKey, div2TaskList);
+
+                        }
+
+                    };
+
+                    readFromSorage();
+
+
+                    </script>
 
 
                 </div>
