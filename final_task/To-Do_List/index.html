@@ -1,27 +1,26 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <title>TO-DO List</title>
 </head>
+
 <body>
 
-    
+
     <div class="flex-container">
         <div class="item">
             <h2>Панель управления</h2>
             <br>
-            <form>    
+            <form>
                 <input id="div1-addTask" type="text" placeholder="Опишите задачу">
                 <button id="btAddTask" type="button">Добавить</button>
                 <script>
-                    const btAddTask = document.querySelector("#btAddTask");
+                    function updateTaskListInSrorage(taskContent) {
 
-                    function updateTaskList(taskItem) {
-                        
                         const rawData = localStorage.getItem('currentTaskList');
-                        let currentTaskList = []; 
-                        
+                        let currentTaskList = [];
                         if (rawData !== null) {
                             try {
                                 currentTaskList = JSON.parse(rawData);
@@ -29,24 +28,44 @@
                                 console.error("Некорректные данные в LocalStorage: currentTaskList.", e);
                                 currentTaskList = [];
                             }
- 
                         };
 
-                        const idx = currentTaskList.indexOf(taskItem);
-                        if(idx!==-1) {
-                            currentTaskList.splice(idx, 1);
-                        };
-                        currentTaskList.push(taskItem);
+//console.log("Длина массива данных: "+currentTaskList.length);                        
 
+                        let newTaskObj = getTaskObject(taskContent, currentTaskList.length);
+                        suffix = currentTaskList.push(newTaskObj);
                         localStorage.setItem('currentTaskList', JSON.stringify(currentTaskList));
 
+                        return suffix;
                     };
 
-                    function renderTaskList(div2TaskList) {
+                    function addButtonDeleteToElement(element, suffix, fc) {
+                        const btDelete = document.createElement('button');
+                        btDelete.textContent = "Удалить";
+                        btDelete.type='button';
+                        btDelete.id = 'delete' + suffix;
+//console.log("Добавлена кнопка "+btDelete.textContent+" id="+btDelete.id);                        
+                        btDelete.addEventListener('click', fc);
+                        element.append(btDelete);
+                    };
+
+                    function getTaskObject(description, id){
+//console.log("Добавлен объект, ИД = "+id);                        
+                        
+                        const taskObj = {
+                            id,
+                            description,
+                            isComplete: false
+                        };
+                     
+                        return taskObj;
+                    };
+
+                    function renderTaskListOnSite(div2TaskList) {
 
                         const rawData = localStorage.getItem('currentTaskList');
-                        let currentTaskList = []; 
-                        
+                        let currentTaskList = [];
+
                         if (rawData !== null) {
                             try {
                                 currentTaskList = JSON.parse(rawData);
@@ -56,34 +75,74 @@
                             }
                         };
 
-                        
-                        while(div2TaskList.firstChild){
+
+                        while (div2TaskList.firstChild) {
                             div2TaskList.removeChild(div2TaskList.firstChild);
                         };
 
                         currentTaskList.forEach(element => {
                             const newTask = document.createElement('p');
-                            newTask.textContent = element;
+                            newTask.textContent = element.description;
                             div2TaskList.append(newTask);
+
+                            addButtonDeleteToElement(newTask, element.id, (e) => {
+                               
+                                const activeBt = e.currentTarget;
+                                let buttonID = undefined;
+                                if (activeBt) {
+                                    console.log('Нажатая кнопка:', activeBt.id);
+                                    buttonID = activeBt.id;
+                                } else return false;
+
+                                const idxTask = buttonID.match(/\d+$/); 
+console.log("idxTask="+idxTask);
+                                
+                                deleteTaskByIndexOnStorage(idxTask);
+                                
+
+
+
+ 
+                            });
                         });
 
                     };
 
+                    function deleteTaskByIndexOnStorage(idxTask){
+
+                        const rawData = localStorage.getItem('currentTaskList');
+                        let currentTaskList = [];
+                        if (rawData !== null) {
+                            try {
+                                currentTaskList = JSON.parse(rawData);
+                            } catch (e) {
+                                console.error("Некорректные данные в LocalStorage: currentTaskList.", e);
+                                currentTaskList = [];
+                            }
+                        };
+console.log("обработка индекса "+idxTask);
+                        const deleteID = currentTaskList.findIndex(task => task.id==idxTask);
+console.log("найден индекс значения хранилища "+deleteID);                        
+                        currentTaskList.splice(deleteID, 1);
+
+                    }
+
                     const addTaskClick = function () {
-                        
+
                         const div1AddTask = document.querySelector("#div1-addTask");
                         const div2TaskList = document.querySelector("#div2-taskList");
 
                         const newTask = document.createElement('p');
                         newTask.textContent = div1AddTask.value;
-                        
-                        updateTaskList(div1AddTask.value);
-                        div1AddTask.value="";
+ //console.log("добавили параграф: "+div1AddTask.value);                           
+                        let suffix = updateTaskListInSrorage(div1AddTask.value);
+                        div1AddTask.value = "";
 
-                        renderTaskList(div2TaskList);
+                        renderTaskListOnSite(div2TaskList, suffix);
 
                     };
-   
+                    
+                    const btAddTask = document.querySelector("#btAddTask");
                     btAddTask.addEventListener('click', addTaskClick);
                 </script>
             </form>
@@ -91,10 +150,13 @@
 
         <div class="item">
             <h2>Список задач</h2>
-            <div id="div2-taskList">
+            <form>
+                <div id="div2-taskList">
 
 
-            </div>
+                </div>
+            </form>
+
         </div>
 
         <div class="item item-narrow">
@@ -127,11 +189,15 @@
         /* Подчёркивание заголовков */
         .item h2 {
             color: blue;
-            border-bottom: 4px solid black; /* толстая линия снизу */
-            padding-bottom: 8px;             /* отступ между текстом и линией */
-            margin: 0 0 15px 0;               /* сброс стандартных отступов h2, снизу — отступ до контента */
+            border-bottom: 4px solid black;
+            /* толстая линия снизу */
+            padding-bottom: 8px;
+            /* отступ между текстом и линией */
+            margin: 0 0 15px 0;
+            /* сброс стандартных отступов h2, снизу — отступ до контента */
         }
     </style>
 
 </body>
+
 </html>
