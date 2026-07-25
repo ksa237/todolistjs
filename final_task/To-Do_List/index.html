@@ -31,8 +31,13 @@
 
                     function deleteButtonAndParagraphOnForm(idTask) {
 
-                        let pFormEl = document.querySelector('#paragraph' + idTask);
+                        const pFormEl = document.querySelector('#group' + idTask);
                         pFormEl.remove();
+                    };
+
+                    function  markTaskOnForm(idTask, isComplete){
+                        const spanFormEl = document.querySelector('#paragraph'+ idTask);
+                        spanFormEl.style.textDecoration = isComplete ? 'line-through' : 'none';
                     };
 
                     function updateButtonAndParagraphOnForm(idKey, formEl) {
@@ -45,13 +50,36 @@
                             console.warn("Отсутствуют данные в локальном хранилище, невозможно получить задачу по ИД=" + idKey, e);
                             return false;
                         };
+                      
 
-                        
                         const idTask = idKey.match(/\d+$/);
-                        const paragraph = addParagraphToElement(formEl, idTask, objTask.description);
 
+                        const groupDiv = document.createElement('div');
+                        groupDiv.id = "group"+idTask;
+                        formEl.append(groupDiv);
+                        
+                        const chBox = addCheckboxToElement(groupDiv, idTask, (e) => {
+
+                            const activeChk = e.currentTarget;
+                            let checkID = undefined;
+                            if (activeChk) {
+                                checkID = activeChk.id;
+                            } else return false;
+
+                            const idTask = checkID.match(/\d+$/);
+                            const idKey = 'key'+idTask;
+                            //зачеркнуть текст , пометить задачу в хранилище
+                            const isComplete = changeTaskByIndexOnStorage(idKey);
+                            markTaskOnForm(idTask, isComplete);
+
+
+                            
+                        });
+
+                        const paragraph = addParagraphToElement(groupDiv, idTask, objTask.description);
+                    
                         addButtonDeleteToElement(paragraph, idTask, (e) => {
-
+ 
                             const activeBt = e.currentTarget;
                             let buttonID = undefined;
                             if (activeBt) {
@@ -67,14 +95,25 @@
 
                     };
 
+                    function addCheckboxToElement(groupDiv, idTask, fc){
+                        chBox = document.createElement('input');
+                        chBox.type = 'checkbox';
+                        chBox.id = "checkbox"+idTask;
+                        chBox.addEventListener('change', fc)
+                        groupDiv.append(chBox);
+                        return chBox;
+
+                    };
+
                     function addParagraphToElement(formEl, idTask, descriptionTask) {
 
-                        const paragraph = document.createElement('p');
+                        const paragraph = document.createElement('span');
                         paragraph.textContent = descriptionTask;
                         paragraph.id = "paragraph" + idTask;
                         formEl.append(paragraph);
 
-                        return paragraph
+
+                        return paragraph;
 
                     }
 
@@ -85,6 +124,8 @@
                         btDelete.id = 'delete' + suffix;
                         btDelete.addEventListener('click', fc);
                         formEl.append(btDelete);
+
+                        return btDelete;
                     };
 
                     function getTaskObject(description, id) {
@@ -98,17 +139,31 @@
                         return taskObj;
                     };
 
-                    function deleteTaskByIndexOnStorage(idTask) {
-                        localStorage.removeItem(idTask);
+                    function deleteTaskByIndexOnStorage(idKey) {
+                        localStorage.removeItem(idKey);
+                    }
+
+                    function changeTaskByIndexOnStorage(idKey){
+
+                        objTask = {};
+                        try {
+                            const rawData = localStorage.getItem(idKey);
+                            objTask = JSON.parse(rawData);
+                        } catch (e) {
+                            console.warn("Отсутствуют данные в локальном хранилище, невозможно получить задачу по ИД=" + idKey, e);
+                            return false;
+                        };
+
+                        objTask.isComplete = !objTask.isComplete;
+                        localStorage.setItem(idKey, JSON.stringify(objTask));
+                        return objTask.isComplete;
+
                     }
 
                     const addTaskClick = function () {
 
                         const div1AddTask = document.querySelector("#div1-addTask");
                         const div2TaskList = document.querySelector("#div2-taskList");
-
-                        //const newTask = document.createElement('p');
-                        //newTask.textContent = div1AddTask.value;
 
                         idKey = updateTaskListInSrorage(div1AddTask.value);
 
