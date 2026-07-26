@@ -18,10 +18,13 @@
                 <button id="btAddTask" type="button">Добавить</button>
                 <script>
 
+                    let GLOBAL_STORAGE_PREFIX_ID = 0;
 
                     function updateTaskListInSrorage(taskContent) {
 
-                        idKey = 'key' + String(localStorage.length);
+                        GLOBAL_STORAGE_PREFIX_ID++;
+
+                        idKey = 'key' + String(GLOBAL_STORAGE_PREFIX_ID);
 
                         const newTaskObj = getTaskObject(taskContent, idKey);
                         localStorage.setItem(idKey, JSON.stringify(newTaskObj));
@@ -52,7 +55,8 @@
                         };
 
 
-                        const idTask = idKey.match(/\d+$/);
+                        const findResult = idKey.match(/\d+$/);
+                        const idTask = findResult[0];
 
                         const groupDiv = document.createElement('div');
                         groupDiv.id = "group" + idTask;
@@ -66,11 +70,21 @@
                                 checkID = activeChk.id;
                             } else return false;
 
-                            const idTask = checkID.match(/\d+$/);
+                            const findResult = checkID.match(/\d+$/);
+                            const idTask = findResult[0];
+
                             const idKey = 'key' + idTask;
                             //зачеркнуть текст , пометить задачу в хранилище
                             const isComplete = changeTaskByIndexOnStorage(idKey);
                             markTaskOnForm(idTask, isComplete);
+
+                            //сбросим фильтр на умолчание = Все задачи
+                            const defaultRadio = document.querySelector('input[name="taskFilter"][value="allTasks"]');
+                            if (defaultRadio) {
+                                defaultRadio.checked = true;
+                            }
+
+                            doFilterTaskListInStorage(defaultRadio.value);
 
 
 
@@ -87,7 +101,9 @@
                                 buttonID = activeBt.id;
                             } else return false;
 
-                            const idTask = buttonID.match(/\d+$/);
+                            const findResult = buttonID.match(/\d+$/);
+                            const idTask = findResult[0];
+
                             const idKey = 'key' + idTask;
                             deleteTaskByIndexOnStorage(idKey);
                             deleteButtonAndParagraphOnForm(idTask);
@@ -128,6 +144,15 @@
                         btDelete.type = 'button';
                         btDelete.id = 'delete' + suffix;
                         btDelete.addEventListener('click', fc);
+
+                        /*const img = document.createElement('img');
+                        img.src = 'icons/delete.svg'; 
+                        img.style.width = '16px';
+                        img.style.height = '16px';
+                        img.style.verticalAlign = 'middle';
+                        img.style.marginRight = '6px';
+                        btDelete.append(img);*/
+
                         formEl.append(btDelete);
 
                         return btDelete;
@@ -138,7 +163,8 @@
                         const taskObj = {
                             id,
                             description,
-                            isComplete: false
+                            isComplete: false,
+                            filtered: true
                         };
 
                         return taskObj;
@@ -165,16 +191,79 @@
 
                     }
 
+
+                    function doFilterTaskListInStorage(filterName) {
+
+                        const storageSize = localStorage.length;
+                        for (i = 0; i < storageSize; i++) {
+
+                            idKey = localStorage.key(i);
+                            let rawData = localStorage.getItem(idKey);
+
+                            if (!rawData) {
+                                continue;
+                            };
+
+                            objTask = {};
+                            try {
+                                const rawData = localStorage.getItem(idKey);
+                                objTask = JSON.parse(rawData);
+                            } catch (e) {
+                                console.warn("Отсутствуют данные в локальном хранилище, невозможно получить задачу по ИД=" + idKey, e);
+                                return false;
+                            };
+
+                            switch (filterName) {
+                                case 'allTasks':
+                                    objTask.filtered = true;
+                                    break;
+
+                                case 'onlyActive':
+                                    if (!objTask.isComplete) {
+                                        objTask.filtered = true;
+                                    } else {
+                                        objTask.filtered = false;
+                                    }
+                                    break;
+
+                                case 'completed':
+                                    if (objTask.isComplete) {
+                                        objTask.filtered = true;
+                                    } else {
+                                        objTask.filtered = false;
+                                    }
+
+                                    break;
+                                default:
+                                    objTask.filtered = true;
+                                    break;
+                            }
+
+                            localStorage.setItem(idKey, JSON.stringify(objTask));
+
+                        }
+
+                    }
+
+
                     const addTaskClick = function () {
 
-                        const div1AddTask = document.querySelector("#div1-addTask");
-                        const div2TaskList = document.querySelector("#div2-taskList");
+                            const div1AddTask = document.querySelector("#div1-addTask");
+                            const div2TaskList = document.querySelector("#div2-taskList");
 
-                        idKey = updateTaskListInSrorage(div1AddTask.value);
+                            idKey = updateTaskListInSrorage(div1AddTask.value);
 
-                        updateButtonAndParagraphOnForm(idKey, div2TaskList);
+                            updateButtonAndParagraphOnForm(idKey, div2TaskList);
 
-                    };
+                            //сбросим фильтр на умолчание = Все задачи
+                            const defaultRadio = document.querySelector('input[name="taskFilter"][value="allTasks"]');
+                            if (defaultRadio) {
+                                defaultRadio.checked = true;
+                            }
+
+                            doFilterTaskListInStorage(defaultRadio.value);
+
+                        };
 
                     const btAddTask = document.querySelector("#btAddTask");
                     btAddTask.addEventListener('click', addTaskClick);
@@ -190,13 +279,33 @@
             <form>
                 <div id="div2-taskList">
                     <script>
+
+                        function initTaskListInStorage(idKey) {
+
+                            objTask = {};
+                            try {
+                                const rawData = localStorage.getItem(idKey);
+                                objTask = JSON.parse(rawData);
+                            } catch (e) {
+                                console.warn("Отсутствуют данные в локальном хранилище, невозможно получить задачу по ИД=" + idKey, e);
+                                return false;
+                            };
+
+                            objTask.filtered = true; //так как по умолчанию выбран фильтр "Все задачи"
+
+                            localStorage.setItem(idKey, JSON.stringify(objTask));
+
+                            return idKey;
+                        };
+
+
                         function readFromSorage() {
 
                             const div2TaskList = document.querySelector("#div2-taskList");
 
 
                             const storageSize = localStorage.length;
-                            //console.log("размер локального хранилища : "+storageSize) ;   
+
                             for (i = 0; i < storageSize; i++) {
                                 idKey = localStorage.key(i);
                                 let item = localStorage.getItem(idKey);
@@ -205,7 +314,9 @@
                                     continue;
                                 };
                                 objTask = JSON.parse(item);
-                                //console.log("найден объект по ИД : "+idKey+" описание: "+objTask.description)  ;   
+
+                                initTaskListInStorage(idKey);
+
                                 updateButtonAndParagraphOnForm(idKey, div2TaskList);
 
                             }
@@ -225,6 +336,117 @@
 
         <div class="item item-narrow">
             <h2>Блок фильтрации</h2>
+
+            <form>
+                <div id="div3-taskFilter">
+                    <label>
+                        <input type="radio" name="taskFilter" value="allTasks" checked>Все задачи
+                    </label>
+                    <br>
+
+                    <label>
+                        <input type="radio" name="taskFilter" value="onlyActive">Только активные
+                    </label>
+                    <br>
+
+                    <label>
+                        <input type="radio" name="taskFilter" value="completed">Выполненные
+                    </label>
+
+
+                </div>
+
+                <script>
+
+                    function doFilterTaskListOnForm(formEl){
+
+
+                        //получить все подчиненные элементы для 
+                        //const div2TaskList = document.querySelector("#div2-taskList");
+
+                        //У каждого элемента считать ИД и вычислить idKey
+                        //по ИД-кей прочитать объект и свойство filtered
+                        //если filtered=false тогда удалить элемент div-чекБокс+кнопка+спан
+                        //если filtered=trie тогда добавить элемент div-чекБокс+кнопка+спан, но проверить не добавлен ли он уже
+
+                        /*const storageSize = localStorage.length;
+                        for (i = 0; i < storageSize; i++) {
+
+                            idKey = localStorage.key(i);
+                            let rawData = localStorage.getItem(idKey);
+
+                            if (!rawData) {
+                                continue;
+                            };
+
+                            objTask = {};
+                            try {
+                                const rawData = localStorage.getItem(idKey);
+                                objTask = JSON.parse(rawData);
+                            } catch (e) {
+                                console.warn("Отсутствуют данные в локальном хранилище, невозможно получить задачу по ИД=" + idKey, e);
+                                return false;
+                            };
+
+                            switch (filter) {
+                                case 'allTasks':
+                                    objTask.filtered = true;
+                                    break;
+
+                                case 'onlyActive':
+                                    if (!objTask.isComplete) {
+                                        objTask.filtered = true;
+                                    } else {
+                                        objTask.filtered = false;
+                                    }
+                                    break;
+
+                                case 'completed':
+                                    if (objTask.isComplete) {
+                                        objTask.filtered = true;
+                                    } else {
+                                        objTask.filtered = false;
+                                    }
+
+                                    break;
+                                default:
+                                    objTask.filtered = true;
+                                    break;
+                            }
+
+                            localStorage.setItem(idKey, JSON.stringify(objTask));
+
+                        }*/
+
+                    }
+
+                        
+
+                    
+
+                    
+
+                    
+
+                    filterContainer = document.getElementById('div3-taskFilter');
+                    filterContainer.addEventListener('change', (e) => {
+                        const target = e.target;
+                        if (target.matches('input[name="taskFilter"]')) {
+
+                            const selectedRadio = document.querySelector('input[name="taskFilter"]:checked');
+                            const div2TaskList = document.querySelector("#div2-taskList");
+
+                            doFilterTaskListInStorage(selectedRadio.value);
+                            doFilterTaskListOnForm(div2TaskList);
+
+                        }
+                    });
+
+                </script>
+
+
+            </form>
+
         </div>
     </div>
 
@@ -245,7 +467,7 @@
         }
 
         .item-narrow {
-            width: 200px;
+            width: 300px;
             flex: none;
             min-width: 200px;
         }
@@ -260,7 +482,6 @@
             margin: 0 0 15px 0;
             /* сброс стандартных отступов h2, снизу — отступ до контента */
         }
-
     </style>
 
 </body>
