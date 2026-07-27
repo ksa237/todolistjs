@@ -18,11 +18,16 @@
                 <button id="btAddTask" type="button">Добавить</button>
                 <script>
 
-                    let GLOBAL_STORAGE_PREFIX_ID = 0;
+                    let GLOBAL_STORAGE_PREFIX_ID = localStorage.getItem("GLOBAL_STORAGE_PREFIX_ID");
+                    if(!GLOBAL_STORAGE_PREFIX_ID){
+                        GLOBAL_STORAGE_PREFIX_ID = 0;
+                        localStorage.setItem("GLOBAL_STORAGE_PREFIX_ID", GLOBAL_STORAGE_PREFIX_ID);   
+                    }
 
                     function updateTaskListInSrorage(taskContent) {
 
                         GLOBAL_STORAGE_PREFIX_ID++;
+                        localStorage.setItem("GLOBAL_STORAGE_PREFIX_ID", GLOBAL_STORAGE_PREFIX_ID); 
 
                         idKey = 'key' + String(GLOBAL_STORAGE_PREFIX_ID);
 
@@ -198,6 +203,11 @@
                         for (i = 0; i < storageSize; i++) {
 
                             idKey = localStorage.key(i);
+                            
+                            if (idKey==="GLOBAL_STORAGE_PREFIX_ID"){
+                                continue;
+                            }
+
                             let rawData = localStorage.getItem(idKey);
 
                             if (!rawData) {
@@ -248,22 +258,23 @@
 
                     const addTaskClick = function () {
 
-                            const div1AddTask = document.querySelector("#div1-addTask");
-                            const div2TaskList = document.querySelector("#div2-taskList");
+                        const div1AddTask = document.querySelector("#div1-addTask");
+                        const div2TaskList = document.querySelector("#div2-taskList");
 
-                            idKey = updateTaskListInSrorage(div1AddTask.value);
+                        idKey = updateTaskListInSrorage(div1AddTask.value);
 
-                            updateButtonAndParagraphOnForm(idKey, div2TaskList);
+                        updateButtonAndParagraphOnForm(idKey, div2TaskList);
 
-                            //сбросим фильтр на умолчание = Все задачи
-                            const defaultRadio = document.querySelector('input[name="taskFilter"][value="allTasks"]');
-                            if (defaultRadio) {
-                                defaultRadio.checked = true;
-                            }
+                        //сбросим фильтр на умолчание = Все задачи
+                        const defaultRadio = document.querySelector('input[name="taskFilter"][value="allTasks"]');
+                        if (defaultRadio) {
+                            defaultRadio.checked = true;
+                        }
 
-                            doFilterTaskListInStorage(defaultRadio.value);
+                        doFilterTaskListInStorage(defaultRadio.value);
 
-                        };
+                        div1AddTask.value="";
+                    };
 
                     const btAddTask = document.querySelector("#btAddTask");
                     btAddTask.addEventListener('click', addTaskClick);
@@ -308,6 +319,11 @@
 
                             for (i = 0; i < storageSize; i++) {
                                 idKey = localStorage.key(i);
+
+                                if (idKey==="GLOBAL_STORAGE_PREFIX_ID"){
+                                    continue;
+                                }
+
                                 let item = localStorage.getItem(idKey);
 
                                 if (!item) {
@@ -358,21 +374,55 @@
 
                 <script>
 
-                    function doFilterTaskListOnForm(formEl){
+                    function getTaskObjectFromStorageByKey(idKey) {
+
+                        objTask = {};
+                        try {
+                            const rawData = localStorage.getItem(idKey);
+                            objTask = JSON.parse(rawData);
+                        } catch (e) {
+                            console.warn("Отсутствуют данные в локальном хранилище, невозможно получить задачу по ИД=" + idKey, e);
+                            return null;
+                        };
+
+                        return objTask;
+
+                    }
+
+                    function doFilterTaskListOnForm(parent) {
+
+                        //const parent = document.querySelector('#div2-taskList');
+                        const children = parent.querySelectorAll('*');
+
+                        const delCandidate = []; //DOM-element
+
+                        for (const item of children) {
+                            itemId = item.id;
+
+                            if (!itemId) {
+                                continue;
+                            }
+
+                            const nonNumericPart = itemId.replace(/\d+$/, '');
+                            if (nonNumericPart !== 'group') {
+                                continue;
+                            }
+
+                            delCandidate.push(item);
+
+                        }
+                        delCandidate.forEach(el => el.remove());
 
 
-                        //получить все подчиненные элементы для 
-                        //const div2TaskList = document.querySelector("#div2-taskList");
-
-                        //У каждого элемента считать ИД и вычислить idKey
-                        //по ИД-кей прочитать объект и свойство filtered
-                        //если filtered=false тогда удалить элемент div-чекБокс+кнопка+спан
-                        //если filtered=trie тогда добавить элемент div-чекБокс+кнопка+спан, но проверить не добавлен ли он уже
-
-                        /*const storageSize = localStorage.length;
+                        const storageSize = localStorage.length;
                         for (i = 0; i < storageSize; i++) {
 
                             idKey = localStorage.key(i);
+
+                            if (idKey==="GLOBAL_STORAGE_PREFIX_ID"){
+                                continue;
+                            }
+
                             let rawData = localStorage.getItem(idKey);
 
                             if (!rawData) {
@@ -386,47 +436,16 @@
                             } catch (e) {
                                 console.warn("Отсутствуют данные в локальном хранилище, невозможно получить задачу по ИД=" + idKey, e);
                                 return false;
-                            };
-
-                            switch (filter) {
-                                case 'allTasks':
-                                    objTask.filtered = true;
-                                    break;
-
-                                case 'onlyActive':
-                                    if (!objTask.isComplete) {
-                                        objTask.filtered = true;
-                                    } else {
-                                        objTask.filtered = false;
-                                    }
-                                    break;
-
-                                case 'completed':
-                                    if (objTask.isComplete) {
-                                        objTask.filtered = true;
-                                    } else {
-                                        objTask.filtered = false;
-                                    }
-
-                                    break;
-                                default:
-                                    objTask.filtered = true;
-                                    break;
                             }
 
-                            localStorage.setItem(idKey, JSON.stringify(objTask));
+                            if (objTask.filtered) {
+                                updateButtonAndParagraphOnForm(idKey, parent);
+                            }
 
-                        }*/
+                        }
 
                     }
 
-                        
-
-                    
-
-                    
-
-                    
 
                     filterContainer = document.getElementById('div3-taskFilter');
                     filterContainer.addEventListener('change', (e) => {
@@ -435,7 +454,21 @@
 
                             const selectedRadio = document.querySelector('input[name="taskFilter"]:checked');
                             const div2TaskList = document.querySelector("#div2-taskList");
+                            
+                            const btAddTask = document.querySelector("#btAddTask");
+                            if (!btAddTask){
+                                return false;
+                            }
+                                                       
 
+                            if (selectedRadio.value==="allTasks"){
+                                //кнопка Добавить Активная
+                                btAddTask.disabled = false;
+                            }else{
+                                //кнопка добавить недоступная
+                                btAddTask.disabled = true;
+                            }
+                            
                             doFilterTaskListInStorage(selectedRadio.value);
                             doFilterTaskListOnForm(div2TaskList);
 
