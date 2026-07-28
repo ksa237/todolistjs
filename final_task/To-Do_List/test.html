@@ -1,7 +1,57 @@
-<input type="checkbox" id="task1">
-<label for="task1">Купить хлеб</label>
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Пустая страница</title>
+</head>
+
+<body>
+
+  <span id="sourcepoint">
+    текст текст иван родил девченку велел тащить пеленку
+    как однажды Жак звонарь притащил глухой фонарь
+    съешь еще этих мягких французких булок да выпей чаю
+    мне кажется порою что солдаты
+
+  </span>
 
 
-<label>
-  <input type="checkbox"> Купить молоко
-</label>
+  <input id="searchpoint" placeholder="поиск">
+
+  <script>
+    const search = document.querySelector("#searchpoint");
+    const sourceNode = document.querySelector("#sourcepoint");
+
+     document.getSelection().setBaseAndExtent(sourceNode, 0, sourceNode, sourceNode.childNodes.length); //!!!
+
+    /*search.addEventListener('input', (e) => {
+
+
+      const searchValue = e.target.value;
+      if (searchValue) {
+        const regex = new RegExp(searchValue, 'gi');
+
+        let text = sourceNode.innerHTML;
+
+        text = text.replace(/<mark class="highlight">.*?<\/mark>/g, '');
+        
+        const newText = text.replace(regex, '<mark class="highlight">$1</mark>');
+        sourceNode.innerHTML = newText;
+
+
+      }
+
+
+      //console.log(sourceNode.textContent);
+      //console.log(`-=${searchValue}=-`);
+
+
+
+    });*/
+
+  </script>
+
+</body>
+
+</html>

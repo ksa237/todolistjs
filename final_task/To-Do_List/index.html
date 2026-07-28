@@ -19,15 +19,15 @@
                 <script>
 
                     let GLOBAL_STORAGE_PREFIX_ID = localStorage.getItem("GLOBAL_STORAGE_PREFIX_ID");
-                    if(!GLOBAL_STORAGE_PREFIX_ID){
+                    if (!GLOBAL_STORAGE_PREFIX_ID) {
                         GLOBAL_STORAGE_PREFIX_ID = 0;
-                        localStorage.setItem("GLOBAL_STORAGE_PREFIX_ID", GLOBAL_STORAGE_PREFIX_ID);   
+                        localStorage.setItem("GLOBAL_STORAGE_PREFIX_ID", GLOBAL_STORAGE_PREFIX_ID);
                     }
 
                     function updateTaskListInSrorage(taskContent) {
 
                         GLOBAL_STORAGE_PREFIX_ID++;
-                        localStorage.setItem("GLOBAL_STORAGE_PREFIX_ID", GLOBAL_STORAGE_PREFIX_ID); 
+                        localStorage.setItem("GLOBAL_STORAGE_PREFIX_ID", GLOBAL_STORAGE_PREFIX_ID);
 
                         idKey = 'key' + String(GLOBAL_STORAGE_PREFIX_ID);
 
@@ -203,8 +203,8 @@
                         for (i = 0; i < storageSize; i++) {
 
                             idKey = localStorage.key(i);
-                            
-                            if (idKey==="GLOBAL_STORAGE_PREFIX_ID"){
+
+                            if (idKey === "GLOBAL_STORAGE_PREFIX_ID") {
                                 continue;
                             }
 
@@ -273,7 +273,7 @@
 
                         doFilterTaskListInStorage(defaultRadio.value);
 
-                        div1AddTask.value="";
+                        div1AddTask.value = "";
                     };
 
                     const btAddTask = document.querySelector("#btAddTask");
@@ -320,7 +320,7 @@
                             for (i = 0; i < storageSize; i++) {
                                 idKey = localStorage.key(i);
 
-                                if (idKey==="GLOBAL_STORAGE_PREFIX_ID"){
+                                if (idKey === "GLOBAL_STORAGE_PREFIX_ID") {
                                     continue;
                                 }
 
@@ -372,6 +372,19 @@
 
                 </div>
 
+
+
+                <div>
+                    <br>
+                    <label>
+                        <input id="searchfield" type="text" placeholder="Поиск">
+                    </label>
+
+
+
+                </div>
+
+
                 <script>
 
                     function getTaskObjectFromStorageByKey(idKey) {
@@ -419,7 +432,7 @@
 
                             idKey = localStorage.key(i);
 
-                            if (idKey==="GLOBAL_STORAGE_PREFIX_ID"){
+                            if (idKey === "GLOBAL_STORAGE_PREFIX_ID") {
                                 continue;
                             }
 
@@ -447,6 +460,8 @@
                     }
 
 
+
+
                     filterContainer = document.getElementById('div3-taskFilter');
                     filterContainer.addEventListener('change', (e) => {
                         const target = e.target;
@@ -454,26 +469,48 @@
 
                             const selectedRadio = document.querySelector('input[name="taskFilter"]:checked');
                             const div2TaskList = document.querySelector("#div2-taskList");
-                            
+
                             const btAddTask = document.querySelector("#btAddTask");
-                            if (!btAddTask){
+                            if (!btAddTask) {
                                 return false;
                             }
-                                                       
 
-                            if (selectedRadio.value==="allTasks"){
+
+                            if (selectedRadio.value === "allTasks") {
                                 //кнопка Добавить Активная
                                 btAddTask.disabled = false;
-                            }else{
+                            } else {
                                 //кнопка добавить недоступная
                                 btAddTask.disabled = true;
                             }
-                            
+
                             doFilterTaskListInStorage(selectedRadio.value);
                             doFilterTaskListOnForm(div2TaskList);
 
                         }
                     });
+
+
+                    const search = document.querySelector("#searchfield");
+                    search.addEventListener('input', (e) => {
+
+                        const searchValue = e.target.value;
+                        if (searchValue) {
+
+                            const p = document.querySelector('#paragraph1');
+                            
+                            if(p.style.background !== 'yellow'){
+                                p.style.background = 'yellow';
+
+                            }else {
+                                p.style.background = '';
+
+                            }
+                           
+                            
+                        }
+
+                    })
 
                 </script>
 
