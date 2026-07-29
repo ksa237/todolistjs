@@ -318,7 +318,7 @@
                             const storageSize = localStorage.length;
 
                             for (i = 0; i < storageSize; i++) {
-                                idKey = localStorage.key(i);
+                                const idKey = localStorage.key(i);
 
                                 if (idKey === "GLOBAL_STORAGE_PREFIX_ID") {
                                     continue;
@@ -329,7 +329,7 @@
                                 if (!item) {
                                     continue;
                                 };
-                                objTask = JSON.parse(item);
+                                const objTask = JSON.parse(item);
 
                                 initTaskListInStorage(idKey);
 
@@ -490,26 +490,95 @@
                         }
                     });
 
+                    function doSearchFromStorage(searchValue) {
 
-                    const search = document.querySelector("#searchfield");
-                    search.addEventListener('input', (e) => {
+                        const storageSize = localStorage.length;
+                        for (i = 0; i < storageSize; i++) {
+                            idKey = localStorage.key(i);
 
-                        const searchValue = e.target.value;
-                        if (searchValue) {
+                            if (idKey === "GLOBAL_STORAGE_PREFIX_ID") {
+                                continue;
+                            }
 
-                            const p = document.querySelector('#paragraph1');
-                            
-                            if(p.style.background !== 'yellow'){
-                                p.style.background = 'yellow';
+                            let item = localStorage.getItem(idKey);
 
-                            }else {
-                                p.style.background = '';
+                            if (!item) {
+                                continue;
+                            };
+                            objTask = JSON.parse(item);
+
+
+                            const isMatch = objTask.description.toLowerCase().includes(searchValue.toLowerCase());
+
+                            if (isMatch) {
+
+                                if (searchValue.length === objTask.description.length) {
+                                    const findResult = idKey.match(/\d+$/);
+                                    const idTask = findResult[0];
+
+                                    return document.querySelector("#paragraph" + idTask);
+
+                                } else {
+                                    return null;
+
+                                }
 
                             }
-                           
-                            
+
                         }
 
+                        return null;
+
+
+                    }
+
+                    function cleanPreviousHighlighting(){
+
+                        const parent = document.querySelector("#div2-taskList");
+                        const children = parent.querySelectorAll('*');
+
+                        
+                        for (const item of children) {
+                            itemId = item.id;
+
+                            if (!itemId) {
+                                continue;
+                            }
+
+                            const nonNumericPart = itemId.replace(/\d+$/, '');
+                            if (nonNumericPart !== 'paragraph') {
+                                continue;
+                            }
+
+                            item.style.background = '';
+
+                        }
+
+
+                        
+                    }
+
+                    const searchInput = document.querySelector("#searchfield");
+                    searchInput.addEventListener('input', (e) => {
+
+                        const searchValue = e.target.value;
+
+
+
+                        cleanPreviousHighlighting();
+
+                        const p = doSearchFromStorage(searchValue);
+
+
+                        if ((!searchValue) || (!p)) {
+                            p.style.background = '';
+                            return false;
+                        }
+
+                        if (p.style.background !== 'yellow') {
+                            p.style.background = 'yellow';
+
+                        }
                     })
 
                 </script>
